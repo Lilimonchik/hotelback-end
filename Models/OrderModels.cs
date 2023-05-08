@@ -14,4 +14,3 @@ namespace Hotel.Models
          public string Promocode { get; set; }
     }
 }
-

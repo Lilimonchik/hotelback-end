@@ -5,6 +5,7 @@ using Hotel.Interfaces;
 using Hotel.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace Hotel.Controllers
 {
@@ -12,23 +13,26 @@ namespace Hotel.Controllers
     [Route("CartIteamAction")]
 	public class CartIteamAction : ControllerBase
 	{
-		public MainInterface _context;
+		public ShopContext _context;
 
-		public CartIteamAction(MainInterface context)
+		public CartIteamAction(ShopContext context)
 		{
 			_context = context;
 		}
+
+        private Guid UserId => Guid.Parse(User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
         [HttpPost("AddCartIteam")]
 
         public IActionResult AddCartIteam(CartIteamModel args)
         {
             var user = _context.users.FirstOrDefault(x => x.UserId == args.UserId);
 
-            var room = _context.rooms.FirstOrDefault(x => x.IdRoom == args.RoomId);
+            var room = _context.rooms.FirstOrDefault(x => x.RoomId == args.RoomId);
 
             if (user != null && room != null)
             {
-                if (user.Online && room.Count >= args.Count)
+                if (room.Count >= args.Count)
                 {
                     _context.cartIteams.Add(new CartIteam
                     {
@@ -36,6 +40,9 @@ namespace Hotel.Controllers
                         RoomId = args.RoomId,
                         UserId = args.UserId
                     });
+
+                    _context.SaveChanges();
+
                     return Ok("Successful!");
                 }
                 else
@@ -45,26 +52,21 @@ namespace Hotel.Controllers
             }
             else
             {
-                return Ok("Op's! You're not online or not enough rooms!");
+                return BadRequest("Op's! You're not online or not enough rooms!");
             }
         }
 
         [HttpGet("ShowUserCartIteam")]
 
-        public IActionResult ShowUserCartIteam(Guid UserId)
+        public IActionResult ShowUserCartIteam()
         {
             var user = _context.cartIteams.Where(x => x.UserId == UserId);
 
             if (user != null)
             {
-                Console.WriteLine("User {0} cartiteam: ",UserId);
 
-                foreach (var users in user)
-                {
-                    Console.WriteLine("RoomId: {0} Count: {1} ",users.RoomId, users.Count);
-                }
+                return Ok(user);
 
-                return Ok("Successful!");
             }
             else
             {
@@ -72,12 +74,9 @@ namespace Hotel.Controllers
             }
         }
         [HttpGet("ShowCartIteam")]
-        public void ShowCartIteam()
+        public IActionResult ShowCartIteam()
         {
-            foreach (CartIteam cartIteam in _context.cartIteams)
-            {
-                Console.WriteLine("RoomId: {0}  UserId: {1} Count: {2} ", cartIteam.RoomId, cartIteam.UserId, cartIteam.Count);
-            }
+            return Ok(_context.cartIteams);
         }
     }
 }

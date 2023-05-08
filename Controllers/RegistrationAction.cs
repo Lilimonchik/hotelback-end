@@ -3,16 +3,19 @@ using Hotel.Context;
 using Hotel.DataBase;
 using Hotel.Interfaces;
 using Hotel.Models;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
+using System.Text;
 namespace Hotel.Controllers
 {
     [ApiController]
     [Route("RegistrationAction")]
 	public class RegistrationAction : ControllerBase
 	{
-		public MainInterface _context;
+		public ShopContext _context;
 
-		public RegistrationAction(MainInterface context)
+		public RegistrationAction(ShopContext context)
 		{
 			_context = context;
 		}
@@ -20,18 +23,27 @@ namespace Hotel.Controllers
         [HttpPost("RegistrationNewUser")]
         public IActionResult RegistrationNewUser([FromBody]RegistrationModel args)
         {
-            var user = _context.users.FirstOrDefault(x => x.Name == args.Name);
+            var user = _context.users.FirstOrDefault(x => x.UserName == args.UserName);
 
             if (user == null)
             {
+                var sha = SHA256.Create();
+
+                var asByteArray = Encoding.Default.GetBytes(args.Password);
+
+                var hashedPassword = Convert.ToBase64String(sha.ComputeHash(asByteArray));
+
                 _context.users.Add(new User
                 {
-                    Name = args.Name,
-                    Password = args.Password,
-                    UserId = Guid.NewGuid(),
-                    Role = Role.User
-                });
-                _context.users.SaveChange();
+                    FirstName = args.FirstName,
+                    Name = args.SecondName,
+                    Email = args.Email,
+                    Birthday = args.Birthday,
+                    UserName = args.UserName,
+                    Password = hashedPassword
+                }) ;
+
+                _context.SaveChanges();
 
                 return Ok("Successful!");
             }
@@ -42,12 +54,9 @@ namespace Hotel.Controllers
 
         }
         [HttpGet("ShowUser")]
-        public void ShowUser()
+        public IActionResult ShowUser()
         {
-            foreach (User user in _context.users)
-            {
-                Console.WriteLine("Name: {0}  Password: {1}   UserId: {2}  Online: {3}  Role: {4} \n\n", user.Name, user.Password, user.UserId, user.Online, user.Role);
-            }
+            return Ok(_context.users);
         }
 
     }

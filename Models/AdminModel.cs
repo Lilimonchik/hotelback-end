@@ -5,7 +5,7 @@ namespace Hotel.Models
 	{
         public Guid UserId { get; set; }
 
-        public string AdminPassword { get; set; }
+        public Guid AdminId { get; set; }
     }
 }
 

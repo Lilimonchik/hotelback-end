@@ -9,73 +9,51 @@ namespace Hotel.Controllers
 {
     [ApiController]
     [Route("PromocodeAction")]
-	public class PromocodeAction
+	public class PromocodeAction : ControllerBase
 	{
-		public MainInterface _context;
+		public ShopContext _context;
 
-		public PromocodeAction(MainInterface context)
+		public PromocodeAction(ShopContext context)
 		{
 			_context = context;
 		}
+
         [HttpPost("AddPromocode")]
-        public void AddPromocode(PromocodeModel args)
+        public IActionResult AddPromocode(PromocodeModel args)
         {
             var user = _context.users.FirstOrDefault(x => x.UserId == args.UserId);
 
-            if(user.Role==Role.Admin && user.Online == true)
-            {
-                _context.promocodes.Add(new Promocode
-                {
-                    Sum = args.Sum,
-                    PromocodeName = args.NamePromocode
-                });
+            var promocode = _context.promocodes.FirstOrDefault(y => y.PromocodeName == args.NamePromocode);
 
-                Console.WriteLine("Successful!");
+            if (user != null && promocode == null)
+            {
+                if (user.Role == Role.Admin)
+                {
+                    _context.promocodes.Add(new Promocode
+                    {
+                        Sum = args.Sum,
+                        PromocodeName = args.NamePromocode
+                    });
+
+                    _context.SaveChanges();
+
+                    return Ok("Successful!");
+                }
+                else
+                {
+                    return BadRequest("Op's! You're not an admin or not online!");
+                }
             }
             else
             {
-                Console.WriteLine("Op's! You're not an admin or not online!");
+                return BadRequest("Op's! Error!");
             }
         }
-        [HttpPost("UsePromocode")]
-        public int UsePromocode() {
 
-            int count = 0;
-
-            int SumPromocode = 0;
-
-            while (count < 5)
-            {
-                Console.WriteLine("Enter your promocode: ");
-
-                string promocode = Console.ReadLine();
-
-                var promo = _context.promocodes.FirstOrDefault(x => x.PromocodeName == promocode);
-
-                if (promo != null)
-                {
-                    SumPromocode = promo.Sum;
-
-                    Console.WriteLine("Successful!");
-
-                    return SumPromocode;
-                }
-
-                count++;
-            }
-            Console.WriteLine("Op's! You used all 5 attempts!");
-
-            return 0;
-
-        }
         [HttpGet("ShowPromocode")]
-        public void ShowPromocode()
+        public IActionResult ShowPromocode()
         {
-            foreach (Promocode promocode in _context.promocodes)
-            {
-                Console.WriteLine("Promocode: {0} Sum: {1}", promocode.PromocodeName, promocode.Sum);
-
-            }
+            return Ok(_context.promocodes);
         }
     }
 }

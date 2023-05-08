@@ -16,6 +16,9 @@ namespace Hotel.Context
         public int Price { get; set; }
 
         public Order Order { get; set; }
+
+        public Room Room { get; set; }
+
     }
 }
 

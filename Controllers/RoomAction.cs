@@ -4,90 +4,162 @@ using Hotel.DataBase;
 using Hotel.Interfaces;
 using Hotel.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hotel.Controllers
 {
     [ApiController]
     [Route("RoomAction")]
-	public class RoomAction
+	public class RoomAction : ControllerBase
 	{
-		public MainInterface _context;
+		public ShopContext _context;
 
-		public RoomAction(MainInterface context)
+		public RoomAction(ShopContext context)
 		{
 			_context = context;
 		}
-        [HttpPost("AddRoom")]
-        public void AddRoom(RoomModel argsAddRoom)
-        {
-            var user = _context.users.FirstOrDefault(x => x.UserId == argsAddRoom.UserId);
 
-            if (user.Role == Role.Admin && user.Online == true)
+        [HttpPost("AddRoom")]
+        public IActionResult AddRoom(RoomModel argsAddRoom)
+        {
+            var user = _context.users
+                .Where(x => x.UserId == argsAddRoom.UserId)
+                .Include(c => c.CartIteams)
+                .ThenInclude(y => y.Room)
+                .FirstOrDefault();
+
+            var categorymain = _context.categories
+                .Where(x => x.CategoryName == argsAddRoom.Category)
+                .FirstOrDefault();
+
+            if (categorymain != null)
             {
-                _context.rooms.Add(new Room
+                if (user != null)
                 {
-                    Price = argsAddRoom.Price,
-                    CountOfPeople = argsAddRoom.CountPeople,
-                    CountOfRoom = argsAddRoom.CountRoom,
-                    IdRoom = Guid.NewGuid(),
-                    Category = new Category
+                    if (user.Role == Role.Admin)
                     {
-                        CategoryId = Guid.NewGuid(),
-                        CategoryName = argsAddRoom.Category
-                    },
-                    Count = argsAddRoom.Count
-                }); ;
-                Console.WriteLine("Successful!");
+                        _context.rooms.Add(new Room
+                        {
+                            Price = argsAddRoom.Price,
+                            CountOfPeople = argsAddRoom.CountPeople,
+                            CountOfRoom = argsAddRoom.CountRoom,
+                            RoomId = Guid.NewGuid(),
+                            CategoryForId = categorymain.CategoryId,
+                            Count = argsAddRoom.Count,
+                            Discount = 0
+                        });
+
+                        _context.SaveChanges();
+
+                        return Ok("Successful!");
+                    }
+                    else
+                    {
+                        return BadRequest("Op's! You're not an admin or not online!");
+                    }
+                }
+                else
+                {
+                    return BadRequest("Op's! Error!");
+                }
             }
             else
             {
-                Console.WriteLine("Op's! You're not an admin or not online!");
+                if (user != null)
+                {
+                    if (user.Role == Role.Admin)
+                    {
+                        _context.rooms.Add(new Room
+                        {
+                            Price = argsAddRoom.Price,
+                            CountOfPeople = argsAddRoom.CountPeople,
+                            CountOfRoom = argsAddRoom.CountRoom,
+                            RoomId = Guid.NewGuid(),
+                            Category = new Category
+                            {
+                                CategoryId = Guid.NewGuid(),
+                                CategoryName = argsAddRoom.Category,
+                            },
+                            Count = argsAddRoom.Count,
+                            Discount = 0
+                        });
+
+                        _context.SaveChanges();
+
+                        return Ok("Successful!");
+                    }
+                    else
+                    {
+                        return BadRequest("Op's! You're not an admin or not online!");
+                    }
+                }
+                else
+                {
+                    return BadRequest("Op's! Error!");
+                }
             }
+            return Ok();
         }
+
         [HttpPost("AddDiscount")]
-        public string AddDiscount (DiscountModel discount)
+        public IActionResult AddDiscount (DiscountModel discount)
         {
             var user = _context.users.FirstOrDefault(x => x.UserId == discount.UserId);
 
-            var room = _context.rooms.FirstOrDefault(x => x.IdRoom == discount.RoomId);
+            var room = _context.rooms.FirstOrDefault(x => x.RoomId == discount.RoomId);
 
             if(user != null && room != null)
             {
-                if(user.Online && user.Role == Role.Admin)
+                if(user.Role == Role.Admin)
                 {
                     if (discount.TypeDiscount == "Interest" && ((discount.SumDiscount * room.Price) / 100) <= room.Price)
                     {
-                        room.TypeDiscount = discount.TypeDiscount;
-
                         room.Discount = discount.SumDiscount;
 
                         room.Price -= ((room.Price * discount.SumDiscount) / 100);
 
-                        return ("Successful!");
+                        _context.SaveChanges();
+
+                        return Ok("Successful!");
                     }
                     else if (discount.TypeDiscount == "Sum" && discount.SumDiscount <= room.Price)
                     {
                         room.Discount = discount.SumDiscount;
 
-                        room.TypeDiscount = discount.TypeDiscount;
-
                         room.Price -= discount.SumDiscount;
 
-                        return ("Successful!");
+                        _context.SaveChanges();
+
+                        return Ok("Successful!");
+                    }
+                    else
+                    {
+                        return BadRequest("Op's! Error!");
                     }
                 }
             }
-            return ("Op's! Incorrect data!");
+            return BadRequest("Op's! Incorrect data!");
         }
+
         [HttpGet("ShowRoom")]
-        public void ShowRoom()
+        public IActionResult ShowRoom()
         {
-            foreach(Room room in _context.rooms)
+            List<RoomDTO> room = new List<RoomDTO>();
+
+            _context.categories.Load();
+
+            foreach (var rooms in _context.rooms)
             {
-                Console.WriteLine("Id: {0}  Type of room: {1}   Count of people: {2}  Price: {3}   Count of room: {4} Count: {5} Discount: {6} ", room.IdRoom, room.CountOfPeople, room.Price, room.CountOfRoom, room.Count,room.Discount);
-                
+                room.Add(new RoomDTO
+                {
+                    CategoryName = rooms.Category.CategoryName,
+                    Discount = rooms.Discount,
+                    Price = rooms.Price
+      
+                }) ;
             }
-        }    
- 
+
+            return Ok(room);
+        }
 	}
 }

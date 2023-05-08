@@ -11,9 +11,12 @@ namespace Hotel.Context
 
 		public string OrderTime { get; set; }
 
-		public string Promocode { get; set; }
+		public string? Promocode { get; set; }
+
+		public User User { get; set; }
 
 		public ICollection<OrderIteam> OrderIteams { get; set; }
-    }
+
+	}
 }
 

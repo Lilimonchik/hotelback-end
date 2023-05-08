@@ -5,6 +5,8 @@ namespace Hotel.Models
 	{
 		public Guid UserId { get; set; }
 
+		public string Promocode { get; set; }
+
 	}
 
 }
