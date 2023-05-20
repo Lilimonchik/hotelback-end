@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 using Hotel.Context;
 using Hotel.DataBase;
 using Hotel.Interfaces;
@@ -19,11 +20,13 @@ namespace Hotel.Controllers
 			_context = context;
 		}
 
+        private Guid UserId => Guid.Parse(User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
         [HttpPost("AddRoom")]
         public IActionResult AddRoom(RoomModel argsAddRoom)
         {
             var user = _context.users
-                .Where(x => x.UserId == argsAddRoom.UserId)
+                .Where(x => x.UserId == UserId)
                 .Include(c => c.CartIteams)
                 .ThenInclude(y => y.Room)
                 .FirstOrDefault();
@@ -104,7 +107,7 @@ namespace Hotel.Controllers
         [HttpPost("AddDiscount")]
         public IActionResult AddDiscount (DiscountModel discount)
         {
-            var user = _context.users.FirstOrDefault(x => x.UserId == discount.UserId);
+            var user = _context.users.FirstOrDefault(x => x.UserId == UserId);
 
             var room = _context.rooms.FirstOrDefault(x => x.RoomId == discount.RoomId);
 
@@ -154,9 +157,10 @@ namespace Hotel.Controllers
                 {
                     CategoryName = rooms.Category.CategoryName,
                     Discount = rooms.Discount,
-                    Price = rooms.Price
-      
-                }) ;
+                    Price = rooms.Price,
+                    RoomId = rooms.RoomId.ToString()
+
+                });
             }
 
             return Ok(room);

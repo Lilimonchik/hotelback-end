@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Hotel.Controllers;
+using Hotel.Context;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.EntityFrameworkCore.SqlServer;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -63,11 +67,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ShopContext>(options =>
-                options.UseSqlServer(""));
+builder.Services.AddDbContext<ShopContext>(opt => {
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+}, ServiceLifetime.Transient);
+//builder.Services.AddDbContext<ShopContext>(options =>
+//              options.UseSqlServer("Server = hotel-db.c0mjcdzvqqvd.us-east-1.rds.amazonaws.com, 3306; Initial Catalog = Hotelinfo; Persist Security Info=False; User ID = admin; Password = andrew12; MultipleActiveResultSets = False; Encrypt = True; TrustServerCertificate = False; Connection Timeout = 30; "));
 var app = builder.Build();
-builder.Services.AddDbContext<ShopContext>(options =>
-             options.UseSqlServer("Server=tcp:anular-shop.database.windows.net,1433;Initial Catalog=project-database;Persist Security Info=False;User ID=oleg;Password=QWUngoSdd13Ss@123@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
+//builder.Services.AddDbContext<ShopContext>(options =>
+//           options.UseSqlServer("Server=tcp:anular-shop.database.windows.net,1433;Initial Catalog=project-database;Persist Security Info=False;User ID=oleg;Password=QWUngoSdd13Ss@123@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
 //builder.Services.AddControllers();
 
 // Configure the HTTP request pipeline.

@@ -6,6 +6,7 @@ using Hotel.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hotel.Controllers
 {
@@ -26,9 +27,11 @@ namespace Hotel.Controllers
 
         public IActionResult AddCartIteam(CartIteamModel args)
         {
-            var user = _context.users.FirstOrDefault(x => x.UserId == args.UserId);
+            Guid RoomId = Guid.Parse(args.RoomId.ToString());
 
-            var room = _context.rooms.FirstOrDefault(x => x.RoomId == args.RoomId);
+            var user = _context.users.FirstOrDefault(x => x.UserId == UserId);
+
+            var room = _context.rooms.FirstOrDefault(x => x.RoomId == RoomId);
 
             if (user != null && room != null)
             {
@@ -37,10 +40,10 @@ namespace Hotel.Controllers
                     _context.cartIteams.Add(new CartIteam
                     {
                         Count = args.Count,
-                        RoomId = args.RoomId,
-                        UserId = args.UserId
+                        CartIteamId = Guid.NewGuid(),
+                        RoomId = RoomId,
+                        UserId = UserId,
                     });
-
                     _context.SaveChanges();
 
                     return Ok("Successful!");
@@ -60,18 +63,26 @@ namespace Hotel.Controllers
 
         public IActionResult ShowUserCartIteam()
         {
-            var user = _context.cartIteams.Where(x => x.UserId == UserId);
+            List<CartIteamDTO> cartIteams = new List<CartIteamDTO>();
 
-            if (user != null)
+            _context.rooms.Load();
+
+            foreach (var iteam in _context.cartIteams)
             {
-
-                return Ok(user);
-
+                if (iteam.UserId == UserId)
+                {
+                    var price = iteam.Room.Price;
+                    cartIteams.Add(new CartIteamDTO
+                    {
+                        CartIteamId = iteam.CartIteamId.ToString(),
+                        Count = iteam.Count,
+                        RoomId = iteam.RoomId.ToString(),
+                        UserId = iteam.UserId.ToString(),
+                        Price = iteam.Room.Price
+                    });
+                }
             }
-            else
-            {
-                return BadRequest("You don't have any cartiteam!");
-            }
+            return Ok(cartIteams);
         }
         [HttpGet("ShowCartIteam")]
         public IActionResult ShowCartIteam()

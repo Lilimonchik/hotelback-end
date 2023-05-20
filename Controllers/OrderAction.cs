@@ -33,7 +33,7 @@ namespace Hotel.Controllers
 			int TotalPrice = 0;
 
 			var user = _context.users
-				.Where(x => x.UserId == newOrder.UserId)
+				.Where(x => x.UserId == UserId)
 				.Include(y => y.CartIteams)
 				.ThenInclude(c => c.Room)
 				.FirstOrDefault();
@@ -62,7 +62,7 @@ namespace Hotel.Controllers
 						OrderIteamId = Guid.NewGuid(),
 						Price = cartIteam.Room.Price,
 						RoomId = cartIteam.RoomId,
-						UserId = cartIteam.UserId
+						UserId = UserId
 					});
 
 					//_context.SaveChanges();
@@ -79,7 +79,7 @@ namespace Hotel.Controllers
 						OrderId = guid,
 						OrderTime = DateTime.Now.ToString(),
 						TotalPrice = TotalPrice - Promocode,
-						UserId = newOrder.UserId,
+						UserId = UserId,
 						Promocode = PromocodeName
 					});
 				}
@@ -90,12 +90,12 @@ namespace Hotel.Controllers
                         OrderId = guid,
                         OrderTime = DateTime.Now.ToString(),
                         TotalPrice = 0,
-                        UserId = newOrder.UserId,
+                        UserId = UserId,
                         Promocode = PromocodeName
                     });
                 }
 
-				var deleteuser = _context.cartIteams.Where(x => x.UserId == newOrder.UserId);
+				var deleteuser = _context.cartIteams.Where(x => x.UserId == UserId);
 
 				_context.cartIteams.RemoveRange(deleteuser);
 

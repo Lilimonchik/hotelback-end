@@ -9,6 +9,8 @@ namespace Hotel.Context
         public int Price { get; set; }
 
         public int Discount { get; set; }
+
+        public string RoomId { get; set; }
     }
 }
 
