@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Hotel.Context
 {
 	public class Room
@@ -14,6 +16,8 @@ namespace Hotel.Context
 		public int Count { get; set; }
 
 		public int Discount { get; set; }
+
+		public string AccualFileUrl { get; set; }  
 
 		public Guid CategoryForId { get; set; }
 

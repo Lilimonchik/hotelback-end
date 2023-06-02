@@ -23,12 +23,11 @@ namespace Hotel.Controllers
         public ShopContext _context;
 
         private readonly IOptions<AuthOptions> authOptions;
-        public LogInAction(ShopContext context,IOptions<AuthOptions> authOptions)
+        public LogInAction(ShopContext context, IOptions<AuthOptions> authOptions)
         {
             _context = context;
             this.authOptions = authOptions;
         }
-
         private Guid UserId => Guid.Parse(User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
         [HttpPost("LogIn")]
@@ -51,17 +50,17 @@ namespace Hotel.Controllers
 
                     var token = GenerateToken(user);
 
-                  
 
-                    return Ok(new {access_token = token});
+
+                    return Ok(new { access_token = token });
                 }
             }
             else
-                {
-                    return BadRequest("Op's! We don't have a user with this name or you have already log in!");
-                }
+            {
+                return BadRequest("Op's! We don't have a user with this name or you have already log in!");
+            }
             return Ok();
-            } 
+        }
         private string GenerateToken(User user)
         {
 
@@ -84,20 +83,21 @@ namespace Hotel.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
+        
         [HttpGet("GetInfoAboutUser")]
         public IActionResult GetInfoAboutUser()
         {
             var user = _context.users.FirstOrDefault(x => x.UserId == UserId);
 
-            if(user != null)
+            if (user != null)
             {
                 return Ok(user);
             }
-            else  
+            else
             {
                 return BadRequest("Op's! You have a problem!");
             }
         }
-        }
+        
     }
+}

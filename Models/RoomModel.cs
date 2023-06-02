@@ -14,6 +14,8 @@ namespace Hotel.Models
         public Guid UserId { get; set; }
 
         public string Category { get; set; }
+
+        public IFormFile FileUrl { get; set; }
     }
 }
 

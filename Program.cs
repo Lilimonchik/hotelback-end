@@ -8,6 +8,8 @@ using Hotel.Context;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Microsoft.Extensions.FileProviders;
+using Hotel.Services;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -38,6 +40,8 @@ builder.Services.AddCors(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IStorageService, StorageService>();
 
 var authOptionsConfiguration = builder.Configuration.GetSection("Auth");
 builder.Services.Configure<AuthOptions>(authOptionsConfiguration);
@@ -84,6 +88,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseAuthentication();
+
+app.UseStaticFiles("/Utility");
+
+app.UseStaticFiles(new StaticFileOptions()
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Utility")),
+    RequestPath = new PathString("/Utility")
+});
 
 app.UseCors("AllowAllCors");
 

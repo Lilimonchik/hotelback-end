@@ -98,3 +98,5 @@
 /Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/MySql.Data.EntityFrameworkCore.dll
 /Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/MySqlConnector.dll
 /Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/Pomelo.EntityFrameworkCore.MySql.dll
+/Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/AWSSDK.Core.dll
+/Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/AWSSDK.S3.dll

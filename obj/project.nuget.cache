@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "wSumLOiwvlISCvjXSSu/w8iavlW1b76DeMW4A1Xgb+m73tLqaeLCd/QDIt/gPU60fRVG29HnmDvkMnXexTvwLw==",
+  "dgSpecHash": "9q+Y4g3y12ibNgHpB3FsDcIs/rdJdbb4ZagjEvLogb/jW9SQqgOarVikx8n8WnjUxBtLRdsnoihjv4QPMrjqSA==",
   "success": true,
   "projectFilePath": "/Users/andrew/Documents/Hotel/Hotel/Hotel.csproj",
   "expectedPackageFiles": [
+    "/Users/andrew/.nuget/packages/awssdk.core/3.7.106.43/awssdk.core.3.7.106.43.nupkg.sha512",
+    "/Users/andrew/.nuget/packages/awssdk.s3/3.7.104.23/awssdk.s3.3.7.104.23.nupkg.sha512",
     "/Users/andrew/.nuget/packages/azure.core/1.24.0/azure.core.1.24.0.nupkg.sha512",
     "/Users/andrew/.nuget/packages/azure.identity/1.6.0/azure.identity.1.6.0.nupkg.sha512",
     "/Users/andrew/.nuget/packages/google.api.gax/4.3.1/google.api.gax.4.3.1.nupkg.sha512",

@@ -11,6 +11,10 @@ namespace Hotel.Context
         public int Discount { get; set; }
 
         public string RoomId { get; set; }
+
+        public int CountOfPeople { get; set; }
+
+        public string UrlPhoto { get; set; }
     }
 }
 
