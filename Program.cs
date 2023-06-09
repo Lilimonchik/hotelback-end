@@ -16,10 +16,6 @@ var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 
-var provider = builder.Services.BuildServiceProvider();
-
-var configuration = provider.GetRequiredService<IConfiguration>();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllCors", builder =>
@@ -92,14 +88,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseAuthentication();
-
-app.UseStaticFiles("/Utility");
-
-app.UseStaticFiles(new StaticFileOptions()
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Utility")),
-    RequestPath = new PathString("/Utility")
-});
 
 app.UseCors("AllowAllCors");
 
