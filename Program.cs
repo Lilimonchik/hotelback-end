@@ -71,9 +71,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ShopContext>(opt => {
+builder.Services.AddDbContext<ShopContext>(option =>
+{
+    option.UseSqlServer("Server=tcp:server-for-project.database.windows.net,1433;Initial Catalog=sushi-dataBase;Persist Security Info=False;User ID=oleh;Password=QWUngoSdd13Ss@123@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+});
+/* builder.Services.AddDbContext<ShopContext>(opt => {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-}, ServiceLifetime.Transient);
+}, ServiceLifetime.Transient);*/
 //builder.Services.AddDbContext<ShopContext>(options =>
 //              options.UseSqlServer("Server = hotel-db.c0mjcdzvqqvd.us-east-1.rds.amazonaws.com, 3306; Initial Catalog = Hotelinfo; Persist Security Info=False; User ID = admin; Password = andrew12; MultipleActiveResultSets = False; Encrypt = True; TrustServerCertificate = False; Connection Timeout = 30; "));
 var app = builder.Build();

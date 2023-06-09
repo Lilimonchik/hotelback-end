@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Cors;
 
 namespace Hotel.Controllers
 {
-	[EnableCors("MyPolicy")]
 	[ApiController]
 	[Route("AdminAction")]
     public class AdminAction : ControllerBase
