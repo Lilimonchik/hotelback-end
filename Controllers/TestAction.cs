@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Security.Claims;
 using Hotel.Services;
+using Microsoft.AspNetCore.SignalR;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace Hotel.Controllers

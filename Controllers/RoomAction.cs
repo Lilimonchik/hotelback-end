@@ -8,6 +8,7 @@ using Hotel.Models;
 using Hotel.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Hotel.Controllers
 {
@@ -20,34 +21,38 @@ namespace Hotel.Controllers
         private readonly IStorageService _storageService;
         private readonly IConfiguration _config;
         private readonly ILogger<TestAction> _logger;
+        private readonly IHubContext<SignalRTest> _hubContext;
 
         public RoomAction(ShopContext context,
             ILogger<TestAction> logger,
             IConfiguration config,
-            IStorageService storageService)
+            IStorageService storageService,
+            IHubContext<SignalRTest> hubContext
+            )
         {
             _context = context;
             _logger = logger;
             _config = config;
             _storageService = storageService;
+            _hubContext = hubContext;
         }
 
         private Guid UserId => Guid.Parse(User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
         [HttpPost("AddRoom")]
-        public IActionResult AddRoom([FromForm] RoomModel argsAddRoom)
+        public async Task<IActionResult> AddRoom([FromForm] RoomModel argsAddRoom)
         {
             string Url = "";
 
-            var user = _context.users
+            var user = await _context.users
                 .Where(x => x.UserId == UserId)
                 .Include(c => c.CartIteams)
                 .ThenInclude(y => y.Room)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
-            var categorymain = _context.categories
+            var categorymain = await _context.categories
                 .Where(x => x.CategoryName == argsAddRoom.Category)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (categorymain != null)
             {
@@ -60,19 +65,30 @@ namespace Hotel.Controllers
 
                         UploadFile(argsAddRoom.FileUrl,docName);
 
+                        Guid RoomId = Guid.NewGuid();
+
                         _context.rooms.Add(new Room
                         {
                             Price = argsAddRoom.Price,
                             CountOfPeople = argsAddRoom.CountPeople,
                             CountOfRoom = argsAddRoom.CountRoom,
-                            RoomId = Guid.NewGuid(),
+                            RoomId = RoomId,
                             CategoryForId = categorymain.CategoryId,
                             Count = argsAddRoom.Count,
                             Discount = 0,
                             AccualFileUrl = docName
                         });
 
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
+                        await _hubContext.Clients.All.SendAsync("UpdateRoomFilter", new RoomDTO
+                        {
+                            CategoryName = argsAddRoom.Category,
+                            Discount = 0,
+                            Price = argsAddRoom.Price,
+                            RoomId = RoomId.ToString(),
+                            CountOfPeople = argsAddRoom.CountPeople,
+                            UrlPhoto = _config["UrlPhoto:url"] + docName
+                        });
 
                         return Ok("Successful!");
                     }
@@ -96,15 +112,19 @@ namespace Hotel.Controllers
                         string docName = Guid.NewGuid().ToString() + fileExt;
                         UploadFile(argsAddRoom.FileUrl,docName);
 
+                        Guid CategoryId = Guid.NewGuid();
+
+                        Guid RoomId = Guid.NewGuid();
+
                         _context.rooms.Add(new Room
                         {
                             Price = argsAddRoom.Price,
                             CountOfPeople = argsAddRoom.CountPeople,
                             CountOfRoom = argsAddRoom.CountRoom,
-                            RoomId = Guid.NewGuid(),
+                            RoomId = RoomId,
                             Category = new Category
                             {
-                                CategoryId = Guid.NewGuid(),
+                                CategoryId = CategoryId,
                                 CategoryName = argsAddRoom.Category,
                             },
                             Count = argsAddRoom.Count,
@@ -113,8 +133,16 @@ namespace Hotel.Controllers
 
                         });
 
-                        _context.SaveChanges();
-
+                        await _context.SaveChangesAsync();
+                        await _hubContext.Clients.All.SendAsync("UpdateRoomFilter", new RoomDTO
+                        {
+                            CategoryName = argsAddRoom.Category,
+                            Discount = 0,
+                            Price = argsAddRoom.Price,
+                            RoomId = RoomId.ToString(),
+                            CountOfPeople = argsAddRoom.CountPeople,
+                            UrlPhoto = _config["UrlPhoto:url"] + docName
+                        });
                         return Ok("Successful!");
                     }
                     else
@@ -171,27 +199,49 @@ namespace Hotel.Controllers
         }
 
         [HttpGet("ShowRoom")]
-        public IActionResult ShowRoom()
+        public async Task<IActionResult> ShowRoom()
         {
-            List<RoomDTO> room = new List<RoomDTO>();
+            List<RoomDTO> rooms = new List<RoomDTO>();
 
-            _context.categories.Load();
+            await _context.categories.LoadAsync();
 
-            foreach (var rooms in _context.rooms)
+            foreach (var context_rooms in _context.rooms)
             {
-                room.Add(new RoomDTO
+                rooms.Add(new RoomDTO
                 {
-                    CategoryName = rooms.Category.CategoryName,
-                    Discount = rooms.Discount,
-                    Price = rooms.Price,
-                    RoomId = rooms.RoomId.ToString(),
-                    CountOfPeople = rooms.CountOfPeople,
-                    UrlPhoto = _config["UrlPhoto:url"]+rooms.AccualFileUrl
+                    CategoryName = context_rooms.Category.CategoryName,
+                    Discount = context_rooms.Discount,
+                    Price = context_rooms.Price,
+                    RoomId = context_rooms.RoomId.ToString(),
+                    CountOfPeople = context_rooms.CountOfPeople,
+                    UrlPhoto = _config["UrlPhoto:url"]+ context_rooms.AccualFileUrl
                 }) ;
             }
+            await _hubContext.Clients.All.SendAsync("askServerResponse", rooms);
 
-            return Ok(room);
+            return Ok(rooms);
+            
         }
+
+        [HttpGet("ShowRoomForId")]
+        public async Task<IActionResult> ShowRoomForId(string roomId)
+        {
+            var room = await _context.rooms.FirstOrDefaultAsync(x => x.RoomId.ToString() == roomId);
+
+            await _context.categories.LoadAsync();
+
+            var send_room = new RoomDTO
+            {
+                CategoryName = room.Category.CategoryName,
+                Discount = room.Discount,
+                Price = room.Price,
+                RoomId = room.RoomId.ToString(),
+                CountOfPeople = room.CountOfPeople,
+                UrlPhoto = _config["UrlPhoto:url"] + room.AccualFileUrl
+            };
+            return Ok(send_room);
+        }
+
         [HttpPost("UploadFile")]
         public async Task<string> UploadFile(IFormFile file,string docName)
         {

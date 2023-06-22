@@ -37,6 +37,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 
+builder.Services.AddSignalR();
+
 builder.Services.AddScoped<IStorageService, StorageService>();
 
 var authOptionsConfiguration = builder.Configuration.GetSection("Auth");
@@ -97,6 +99,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseCors(MyAllowSpecificOrigins);
+
+app.MapHub<SignalRTest>("/signalRTest");
 
 app.UseAuthorization(); 
 
