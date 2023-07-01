@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hotel.Migrations
 {
     /// <inheritdoc />
-    public partial class One : Migration
+    public partial class First : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -64,6 +64,8 @@ namespace Hotel.Migrations
                     CountOfRoom = table.Column<int>(type: "int", nullable: false),
                     Count = table.Column<int>(type: "int", nullable: false),
                     Discount = table.Column<int>(type: "int", nullable: false),
+                    About = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AccualFileUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CategoryForId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>

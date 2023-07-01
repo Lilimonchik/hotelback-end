@@ -54,11 +54,10 @@ namespace Hotel.Controllers
 
         }
         [HttpGet("ShowUser")]
-        public IActionResult ShowUser()
+        public async Task<IActionResult> ShowUser()
         {
             return Ok(_context.users);
         }
-
     }
 }
 

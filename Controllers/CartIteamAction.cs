@@ -25,25 +25,34 @@ namespace Hotel.Controllers
 
         [HttpPost("AddCartIteam")]
 
-        public IActionResult AddCartIteam(CartIteamModel args)
+        public async Task<IActionResult> AddCartIteam(CartIteamModel args)
         {
             Guid RoomId = Guid.Parse(args.RoomId.ToString());
 
-            var user = _context.users.FirstOrDefault(x => x.UserId == UserId);
+            var user =  await _context.users.FirstOrDefaultAsync(x => x.UserId == UserId);
 
-            var room = _context.rooms.FirstOrDefault(x => x.RoomId == RoomId);
+            var room = await _context.rooms.FirstOrDefaultAsync(x => x.RoomId == RoomId);
+
+            var check_cartitem = await _context.cartIteams.FirstOrDefaultAsync(x => x.RoomId == RoomId);
 
             if (user != null && room != null)
             {
                 if (room.Count >= args.Count)
                 {
-                    _context.cartIteams.Add(new CartIteam
+                    if(check_cartitem != null)
                     {
-                        Count = args.Count,
-                        CartIteamId = Guid.NewGuid(),
-                        RoomId = RoomId,
-                        UserId = UserId,
-                    });
+                        check_cartitem.Count += 1;
+                    }
+                    else
+                    {
+                        _context.cartIteams.Add(new CartIteam
+                        {
+                            Count = args.Count,
+                            CartIteamId = Guid.NewGuid(),
+                            RoomId = RoomId,
+                            UserId = UserId,
+                        });
+                    }
                     _context.SaveChanges();
 
                     return Ok("Successful!");
@@ -67,20 +76,27 @@ namespace Hotel.Controllers
 
             _context.rooms.Load();
 
-            foreach (var iteam in _context.cartIteams)
+            try
             {
-                if (iteam.UserId == UserId)
+                foreach (var iteam in _context.cartIteams)
                 {
-                    var price = iteam.Room.Price;
-                    cartIteams.Add(new CartIteamDTO
+                    if (iteam.UserId == UserId)
                     {
-                        CartIteamId = iteam.CartIteamId.ToString(),
-                        Count = iteam.Count,
-                        RoomId = iteam.RoomId.ToString(),
-                        UserId = iteam.UserId.ToString(),
-                        Price = iteam.Room.Price
-                    });
+                        var price = iteam.Room.Price;
+                        cartIteams.Add(new CartIteamDTO
+                        {
+                            CartIteamId = iteam.CartIteamId.ToString(),
+                            Count = iteam.Count,
+                            RoomId = iteam.RoomId.ToString(),
+                            UserId = iteam.UserId.ToString(),
+                            Price = iteam.Room.Price
+                        });
+                    }
                 }
+            }
+            catch
+            {
+                return Ok(cartIteams);
             }
             return Ok(cartIteams);
         }

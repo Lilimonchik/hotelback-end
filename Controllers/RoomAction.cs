@@ -73,11 +73,12 @@ namespace Hotel.Controllers
                             CountOfPeople = argsAddRoom.CountPeople,
                             CountOfRoom = argsAddRoom.CountRoom,
                             RoomId = RoomId,
+                            About = argsAddRoom.About,
                             CategoryForId = categorymain.CategoryId,
                             Count = argsAddRoom.Count,
                             Discount = 0,
                             AccualFileUrl = docName
-                        });
+                        }) ;
 
                         await _context.SaveChangesAsync();
                         await _hubContext.Clients.All.SendAsync("UpdateRoomFilter", new RoomDTO
@@ -86,6 +87,7 @@ namespace Hotel.Controllers
                             Discount = 0,
                             Price = argsAddRoom.Price,
                             RoomId = RoomId.ToString(),
+                            About = argsAddRoom.About,
                             CountOfPeople = argsAddRoom.CountPeople,
                             UrlPhoto = _config["UrlPhoto:url"] + docName
                         });
@@ -122,6 +124,7 @@ namespace Hotel.Controllers
                             CountOfPeople = argsAddRoom.CountPeople,
                             CountOfRoom = argsAddRoom.CountRoom,
                             RoomId = RoomId,
+                            About = argsAddRoom.About,
                             Category = new Category
                             {
                                 CategoryId = CategoryId,
@@ -139,6 +142,7 @@ namespace Hotel.Controllers
                             CategoryName = argsAddRoom.Category,
                             Discount = 0,
                             Price = argsAddRoom.Price,
+                            About = argsAddRoom.About,
                             RoomId = RoomId.ToString(),
                             CountOfPeople = argsAddRoom.CountPeople,
                             UrlPhoto = _config["UrlPhoto:url"] + docName
@@ -212,6 +216,7 @@ namespace Hotel.Controllers
                     CategoryName = context_rooms.Category.CategoryName,
                     Discount = context_rooms.Discount,
                     Price = context_rooms.Price,
+                    About = context_rooms.About,
                     RoomId = context_rooms.RoomId.ToString(),
                     CountOfPeople = context_rooms.CountOfPeople,
                     UrlPhoto = _config["UrlPhoto:url"]+ context_rooms.AccualFileUrl
@@ -226,20 +231,25 @@ namespace Hotel.Controllers
         [HttpGet("ShowRoomForId")]
         public async Task<IActionResult> ShowRoomForId(string roomId)
         {
-            var room = await _context.rooms.FirstOrDefaultAsync(x => x.RoomId.ToString() == roomId);
+            var room = await _context.rooms
+                .Where(x => x.RoomId.ToString() == roomId)
+                .Include(y => y.Category)
+                .FirstOrDefaultAsync();
 
-            await _context.categories.LoadAsync();
 
-            var send_room = new RoomDTO
+            var room_send = new AllRoomInformationDTO
             {
                 CategoryName = room.Category.CategoryName,
+                Count = room.Count,
+                CountOfPeople = room.CountOfPeople,
+                CountOfRoom = room.CountOfRoom,
                 Discount = room.Discount,
                 Price = room.Price,
+                About = room.About,
                 RoomId = room.RoomId.ToString(),
-                CountOfPeople = room.CountOfPeople,
                 UrlPhoto = _config["UrlPhoto:url"] + room.AccualFileUrl
             };
-            return Ok(send_room);
+            return Ok(room_send);
         }
 
         [HttpPost("UploadFile")]

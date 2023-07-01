@@ -101,3 +101,6 @@
 /Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/AWSSDK.Core.dll
 /Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/AWSSDK.S3.dll
 /Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/System.Net.WebSockets.WebSocketProtocol.dll
+/Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/Microsoft.AspNetCore.JsonPatch.dll
+/Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+/Users/andrew/Documents/Hotel/Hotel/bin/Debug/net7.0/Newtonsoft.Json.Bson.dll

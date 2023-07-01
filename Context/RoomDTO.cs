@@ -12,6 +12,8 @@ namespace Hotel.Context
 
         public string RoomId { get; set; }
 
+        public string About { get; set; }
+
         public int CountOfPeople { get; set; }
 
         public string UrlPhoto { get; set; }

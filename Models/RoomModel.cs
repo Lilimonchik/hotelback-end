@@ -11,6 +11,8 @@ namespace Hotel.Models
 
         public int Count { get; set; }
 
+        public string About { get; set; }
+
         public Guid UserId { get; set; }
 
         public string Category { get; set; }

@@ -17,6 +17,8 @@ namespace Hotel.Context
 
 		public int Discount { get; set; }
 
+		public string About { get; set; }
+
 		public string AccualFileUrl { get; set; }  
 
 		public Guid CategoryForId { get; set; }
